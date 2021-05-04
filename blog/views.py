@@ -5,7 +5,7 @@ from django.views.generic.edit import (
 )
 from django.urls import reverse_lazy
 from .forms import CommentForm
-from .models import Post, Comment
+from .models import Post, Comments
 
 
 # Create your views here.
@@ -39,22 +39,22 @@ class BlogDeleteView(DeleteView):
 
 
 def details(request, post_id):
-    posts = get_object_or_404(id=post_id)
-    comments = posts.comments.all().order_by('-date_created')
+    post = Post.objects.get(id=post_id)
+    comments = post.comments.all().order_by('-date_created')
 
     if request.method == 'POST':
-        comment_form = CommentForm(request.POST or None)
-        if comment_form.is_valid():
+        cf = CommentForm(request.POST or None)
+        if cf.is_valid():
             content = request.POST.get('content')
-            comment = Comment.objects.create(post=Post, user=request.user, content=content)
-            comment.post = Post
+            comment = Comments.objects.create(post=post, user=request.user, content=content)
+            comment.post = post
             comment.save()
             return redirect(Post.get_absolute_urls())
     else:
-        comment_form = CommentForm()
+        cf = CommentForm()
     context = {
-        'post': Post,
-        'comment_form': comment_form,
+        'post': post,
+        'comment_form': cf,
         'comments': comments,
     }
 
